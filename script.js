@@ -3,24 +3,53 @@ var board,
 
 /*The "AI" part starts here */
 
-var minimaxRoot =function(depth, game, isMaximisingPlayer) {
+var minimaxRoot = function (depth, game, isMaximisingPlayer) {
 
     var newGameMoves = game.ugly_moves();
     var bestMove = -9999;
     var bestMoveFound;
 
-    for(var i = 0; i < newGameMoves.length; i++) {
+    // Sort the moves using the move ordering technique
+    newGameMoves.sort(function (a, b) {
+        return getMoveValue(game, a) - getMoveValue(game, b);
+    });
+
+    for (var i = 0; i < newGameMoves.length; i++) {
         var newGameMove = newGameMoves[i]
         game.ugly_move(newGameMove);
         var value = minimax(depth - 1, game, -10000, 10000, !isMaximisingPlayer);
         game.undo();
-        if(value >= bestMove) {
+        if (value >= bestMove) {
             bestMove = value;
             bestMoveFound = newGameMove;
         }
     }
     return bestMoveFound;
 };
+
+// This function calculates the value of a move
+var getMoveValue = function (game, move) {
+    var value = 0;
+    if (game.in_checkmate()) {
+        // If the move is a checkmate, it is the best move
+        return 10000;
+    } else if (game.in_draw()) {
+        // If the move is a draw, it is not a good move
+        return -1000;
+    } else if (game.in_check()) {
+        // If the move puts the opponent in check, it is a good move
+        value += 10;
+    }
+
+    // Add the value of the captured piece (if any)
+    var capturedPiece = game.get(move.to);
+    if (capturedPiece) {
+        value += getPieceValue(capturedPiece.type, move.to[0], move.to[1]);
+    }
+
+    return value;
+};
+
 
 var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
     positionCount++;
