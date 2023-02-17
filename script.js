@@ -1,21 +1,35 @@
 var board,
     game = new Chess();
 
-/*The "AI" part starts here */
+var killerMoves = {};
 
 var minimaxRoot = function (depth, game, isMaximisingPlayer) {
-
     var newGameMoves = game.ugly_moves();
     var bestMove = -9999;
     var bestMoveFound;
 
-    // Sort the moves using the move ordering technique
+    // Get previously discarded moves at the current depth
+    var discardedMoves = [];
+    if (killerMoves[depth]) {
+        for (var move in killerMoves[depth]) {
+            if (killerMoves[depth].hasOwnProperty(move) && killerMoves[depth][move] <= 0) {
+                discardedMoves.push(move);
+            }
+        }
+    }
+
+    // Sort the moves using the move ordering technique, excluding discarded moves
     newGameMoves.sort(function (a, b) {
-        return getMoveValue(game, a) - getMoveValue(game, b);
+        if (discardedMoves.indexOf(a) !== -1 || discardedMoves.indexOf(b) !== -1) {
+            return 0;
+        }
+        return killerMoves[depth] && killerMoves[depth][a] > killerMoves[depth][b] ? -1 :
+            killerMoves[depth] && killerMoves[depth][a] < killerMoves[depth][b] ? 1 :
+                getMoveValue(game, b) - getMoveValue(game, a);
     });
 
     for (var i = 0; i < newGameMoves.length; i++) {
-        var newGameMove = newGameMoves[i]
+        var newGameMove = newGameMoves[i];
         game.ugly_move(newGameMove);
         var value = minimax(depth - 1, game, -10000, 10000, !isMaximisingPlayer);
         game.undo();
@@ -23,8 +37,39 @@ var minimaxRoot = function (depth, game, isMaximisingPlayer) {
             bestMove = value;
             bestMoveFound = newGameMove;
         }
+        // Update the killer moves
+        if (!killerMoves[depth]) {
+            killerMoves[depth] = {};
+        }
+        killerMoves[depth][newGameMove] = (killerMoves[depth][newGameMove] || 0) + 1;
+        // Discard the move if it does not change the best move and has already been discarded
+        if (bestMoveFound && newGameMove !== bestMoveFound && value < bestMove) {
+            if (!killerMoves[depth]) {
+                killerMoves[depth] = {};
+            }
+            killerMoves[depth][newGameMove] = (killerMoves[depth][newGameMove] || 0) - 1;
+            discardedMoves.push(newGameMove);
+        }
     }
     return bestMoveFound;
+};
+
+var zeroMove = function (game) {
+    var newGameMoves = game.ugly_moves();
+
+    for (var i = 0; i < newGameMoves.length; i++) {
+        game.ugly_move(newGameMoves[i]);
+        var value = minimax(1, game, -10000, 10000, false);
+        game.undo();
+
+        // If a zero move is found, immediately return it
+        if (value >= 1000) {
+            return newGameMoves[i];
+        }
+    }
+
+    // If no zero move is found, return null
+    return null;
 };
 
 // This function calculates the value of a move
@@ -35,7 +80,7 @@ var getMoveValue = function (game, move) {
         return 10000;
     } else if (game.in_draw()) {
         // If the move is a draw, it is not a good move
-        return -1000;
+        return -100000;
     } else if (game.in_check()) {
         // If the move puts the opponent in check, it is a good move
         value += 10;
@@ -101,40 +146,37 @@ var reverseArray = function(array) {
 };
 
 var pawnEvalWhite =
-    [
-        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-        [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
-        [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
-        [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
-        [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
-        [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
-        [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
-        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+    [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.5, 1.0, 1.0, -2.5, -2.5, 1.0, 1.0, 0.5],
+        [0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5],
+        [0.0, 0.0, 0.0, 2.0, 2.5, 0.0, 0.0, 0.0],
+        [0.5, 0.5, 1.0, 2.0, 2.5, 1.0, 0.5, 0.5],
+        [1.0, 1.0, 2.0, 2.5, 3.0, 2.0, 1.0, 1.0],
+        [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     ];
 
 var pawnEvalBlack = reverseArray(pawnEvalWhite);
 
 var knightEval =
-    [
-        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
-        [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
-        [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
-        [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
-        [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
-        [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
-        [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
+    [[-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+        [-4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0],
+        [-3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0],
+        [-3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0],
+        [-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0],
+        [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
+        [-4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0],
         [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
     ];
 
-var bishopEvalWhite = [
-    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
-    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
-    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
-    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
-    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
-    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
-    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+var bishopEvalWhite = [[-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+[-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0],
+[-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0],
+[-1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0],
+[-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0],
+[-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0],
+[-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0],
+[-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
 ];
 
 var bishopEvalBlack = reverseArray(bishopEvalWhite);
@@ -153,29 +195,55 @@ var rookEvalWhite = [
 var rookEvalBlack = reverseArray(rookEvalWhite);
 
 var evalQueen = [
-    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
-    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
-    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
-    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
-    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
-    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
-    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+    [-2, -1, -1, -0.5, -0.5, -1, -1, -2],
+    [-1, 0, 0, 0, 0, 0, 0, -1],
+    [-1, 0, 0.5, 0.5, 0.5, 0.5, 0, -1],
+    [-0.5, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5],
+    [0, 0, 0.5, 0.5, 0.5, 0.5, 0, -0.5],
+    [-1, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -1],
+    [-1, 0, 0.5, 0, 0, 0, 0, -1],
+    [-2, -1, -1, -0.5, -0.5, -1, -1, -2]
 ];
 
 var kingEvalWhite = [
-
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
-    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
-    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
-    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
+  [-3, -4, -4, -5, -5, -4, -4, -3],
+  [-3, -4, -4, -5, -5, -4, -4, -3],
+  [-3, -4, -4, -5, -5, -4, -4, -3],
+  [-3, -4, -4, -5, -5, -4, -4, -3],
+  [-2, -3, -3, -4, -4, -3, -3, -2],
+  [-1, -2, -2, -2, -2, -2, -2, -1],
+  [2, 2, 0, 0, 0, 0, 2, 2],
+  [2, 3, 1, 0, 0, 1, 3, 2]
 ];
 
 var kingEvalBlack = reverseArray(kingEvalWhite);
+function isEndgame(game) {
+    // If there are less than 6 pieces left on the board, it's likely the game is in the endgame
+    const pieces = game.board().reduce((a, b) => a.concat(b));
+    const numPieces = pieces.filter(p => p !== null).length;
+    return numPieces <= 6;
+}
+
+function evaluateEndgame(board) {
+    // TODO: Implement endgame evaluation function
+    return 0;
+}
+
+function evaluateBoard(board) {
+    // If it's the endgame, use a different evaluation function
+    if (isEndgame(game)) {
+        return evaluateEndgame(board);
+    }
+
+    // Otherwise, use the normal evaluation function
+    var totalEvaluation = 0;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            totalEvaluation = totalEvaluation + getPieceValue(board[i][j], i, j);
+        }
+    }
+    return totalEvaluation;
+}
 
 
 
