@@ -94,12 +94,22 @@ var getMoveValue = function (game, move) {
 
     return value;
 };
-
-
-var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
+var openingBook = {
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e7e5',
+    // Add more positions and their best moves as needed
+};
+var currentFEN = game.fen();
+// Define your minimax function to take an additional argument for the current FEN string
+var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN) {
     positionCount++;
     if (depth === 0) {
         return -evaluateBoard(game.board());
+    }
+
+    // Check if the current position is in the opening book
+    if (currentFEN in openingBook) {
+        return openingBook[currentFEN];
+
     }
 
     var newGameMoves = game.ugly_moves();
@@ -108,11 +118,11 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
         var bestMove = -9999;
         for (var i = 0; i < newGameMoves.length; i++) {
             game.ugly_move(newGameMoves[i]);
-            bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
+            bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer, game.fen()));
             game.undo();
             alpha = Math.max(alpha, bestMove);
             if (beta <= alpha) {
-                return bestMove;
+                break;
             }
         }
         return bestMove;
@@ -120,26 +130,39 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
         var bestMove = 9999;
         for (var i = 0; i < newGameMoves.length; i++) {
             game.ugly_move(newGameMoves[i]);
-            bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
+            bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer, game.fen()));
             game.undo();
             beta = Math.min(beta, bestMove);
             if (beta <= alpha) {
-                return bestMove;
+                break;
             }
         }
         return bestMove;
     }
 };
 
+// Call your minimax function with the current FEN string as an argument
+var bestMove = minimax(3, game, -10000, 10000, true, game.fen());
+var transpositionTable = {};
+
 var evaluateBoard = function (board) {
+    // Check the transposition table for a stored evaluation
+    var boardString = board.join('');
+    if (transpositionTable[boardString]) {
+        return transpositionTable[boardString];
+    }
+
+    // Calculate the evaluation and store it in the transposition table
     var totalEvaluation = 0;
     for (var i = 0; i < 8; i++) {
         for (var j = 0; j < 8; j++) {
             totalEvaluation = totalEvaluation + getPieceValue(board[i][j], i, j);
         }
     }
+    transpositionTable[boardString] = totalEvaluation;
     return totalEvaluation;
 };
+
 
 var reverseArray = function (array) {
     return array.slice().reverse();
