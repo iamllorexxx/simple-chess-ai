@@ -94,10 +94,12 @@ var getMoveValue = function (game, move) {
 
     return value;
 };
-var openingBook = {
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e7e5',
+let openingBook = {
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e4', // best move for white
+    'rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'c5', // best move for black in the Sicilian Defense
     // Add more positions and their best moves as needed
 };
+
 var currentFEN = game.fen();
 // Define your minimax function to take an additional argument for the current FEN string
 var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN) {
@@ -109,7 +111,6 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN
     // Check if the current position is in the opening book
     if (currentFEN in openingBook) {
         return openingBook[currentFEN];
-
     }
 
     var newGameMoves = game.ugly_moves();
@@ -186,10 +187,10 @@ var knightEval =
     [-4, -2, 0.0, 0.0, 0.0, 0.0, -2, -4],
     [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
     [-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0],
-        [-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0],
-        [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
-        [-4, -2, 0.0, 0.0, 0.0, 0.0, -2, -4],
-        [-5, -4, -3, -3, -3, -3, -4, -5]
+    [-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0],
+    [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
+    [-4, -2, 0.0, 0.0, 0.0, 0.0, -2, -4],
+    [-5, -4, -3, -3, -3, -3, -4, -5]
     ];
 
 var bishopEvalWhite = [[-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
@@ -333,6 +334,7 @@ var getBestMove = function (game) {
     var positionsPerS = (positionCount * 1000 / moveTime);
 
     $('#position-count').text(positionCount);
+    $('#best-move').text(bestMove);
     $('#time').text(moveTime / 1000 + 's');
     $('#positions-per-s').text(positionsPerS);
     return bestMove;
