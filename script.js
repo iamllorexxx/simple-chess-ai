@@ -94,24 +94,15 @@ var getMoveValue = function (game, move) {
 
     return value;
 };
-let openingBook = {
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e4', // best move for white
-    'rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'e5', // best move for black in the Sicilian Defense
-    // Add more positions and their best moves as needed
-};
 
 var currentFEN = game.fen();
 // Define your minimax function to take an additional argument for the current FEN string
-var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN) {
+var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
     positionCount++;
     if (depth === 0) {
         return -evaluateBoard(game.board());
     }
 
-    // Check if the current position is in the opening book
-    if (currentFEN in openingBook) {
-        return openingBook[currentFEN];
-    }
 
     var newGameMoves = game.ugly_moves();
 
@@ -143,7 +134,7 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN
 };
 
 // Call your minimax function with the current FEN string as an argument
-var bestMove = minimax(3, game, -10000, 10000, true, game.fen());
+var bestMove = minimax(3, game, -10000, 10000, true);
 var transpositionTable = {};
 
 var evaluateBoard = function (board) {
