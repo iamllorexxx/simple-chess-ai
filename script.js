@@ -94,6 +94,11 @@ var getMoveValue = function (game, move) {
 
     return value;
 };
+let openingBook = {
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e4', // best move for white
+    'rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'e5', // best move for black in the Sicilian Defense
+    // Add more positions and their best moves as needed
+};
 
 var currentFEN = game.fen();
 // Define your minimax function to take an additional argument for the current FEN string
@@ -103,7 +108,10 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN
         return -evaluateBoard(game.board());
     }
 
-    
+    // Check if the current position is in the opening book
+    if (currentFEN in openingBook) {
+        return openingBook[currentFEN];
+    }
 
     var newGameMoves = game.ugly_moves();
 
@@ -320,13 +328,27 @@ var getBestMove = function (game) {
     var depth = parseInt($('#search-depth').find(':selected').text());
 
     var d = new Date().getTime();
-    var bestMove = minimaxRoot(depth, game, true);
+    if (currentFEN = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
+        
+    }
+    else if (currentFEN = 'rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'kf6';
+        var bestMove = { color: 'b', from: 6, to: 37, flags: 1, piece: 'n' }
+
+    }
+    else {
+        var bestMoveFound = 'e5';
+
+        var bestMove = minimaxRoot(depth, game, true);
+    }
     var d2 = new Date().getTime();
     var moveTime = (d2 - d);
     var positionsPerS = (positionCount * 1000 / moveTime);
 
     $('#position-count').text(positionCount);
-    $('#best-move').text(bestMove);
+    $('#best-move').text(bestMoveFound);
     $('#time').text(moveTime / 1000 + 's');
     $('#positions-per-s').text(positionsPerS);
     return bestMove;
