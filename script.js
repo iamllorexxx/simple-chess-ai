@@ -94,11 +94,6 @@ var getMoveValue = function (game, move) {
 
     return value;
 };
-let openingBook = {
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e4', // best move for white
-    'rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'c5', // best move for black in the Sicilian Defense
-    // Add more positions and their best moves as needed
-};
 
 var currentFEN = game.fen();
 // Define your minimax function to take an additional argument for the current FEN string
@@ -108,10 +103,7 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN
         return -evaluateBoard(game.board());
     }
 
-    // Check if the current position is in the opening book
-    if (currentFEN in openingBook) {
-        return openingBook[currentFEN];
-    }
+    
 
     var newGameMoves = game.ugly_moves();
 
