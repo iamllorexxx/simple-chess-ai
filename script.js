@@ -328,6 +328,7 @@ var getBestMove = function (game) {
     var depth = parseInt($('#search-depth').find(':selected').text());
     console.log(game.fen());
     var d = new Date().getTime();
+    /* ходы пешками на 2 клетки */
     if (game.fen() == 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1') {
         var bestMoveFound = 'e5';
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
@@ -339,13 +340,13 @@ var getBestMove = function (game) {
 
     }
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/1P6/8/P1PPPPPP/RNBQKBNR b KQkq b3 0 1') {
-        var bestMoveFound = 'e6';
-        var bestMove = { color: 'b', from: 20, to: 36, flags: 1, piece: 'p' }
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
 
     }
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq c3 0 1') {
         var bestMoveFound = 'e5';
-        var bestMove = { color: 'b', from: 20, to: 36, flags: 1, piece: 'p' }
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
 
     }
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1') {
@@ -368,6 +369,8 @@ var getBestMove = function (game) {
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
 
     }
+        /* ходы конями */
+
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1') {
         var bestMoveFound = 'e5';
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
@@ -388,6 +391,48 @@ var getBestMove = function (game) {
         var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
 
     }
+        /* ходы пешками на 1 клетку */
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'b6';
+        var bestMove = { color: 'b', from: 17, to: 33, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'c5';
+        var bestMove = { color: 'b', from: 18, to: 50, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/2P5/PP1PPPPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'Nf6';
+        var bestMove = { color: 'b', from: 6, to: 37, flags: 1, piece: 'n' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/3P4/PPP1PPPP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/6P1/PPPPPP1P/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'c5';
+        var bestMove = { color: 'b', from: 18, to: 50, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/7P/PPPPPPP1/RNBQKBNR b KQkq - 0 1') {
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
+
+    }
+    
     else {
         var bestMoveFound = 'e5';
 
