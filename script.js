@@ -94,15 +94,24 @@ var getMoveValue = function (game, move) {
 
     return value;
 };
+let openingBook = {
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e4', // best move for white
+    'rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'e5', // best move for black in the Sicilian Defense
+    // Add more positions and their best moves as needed
+};
 
 var currentFEN = game.fen();
 // Define your minimax function to take an additional argument for the current FEN string
-var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
+var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN) {
     positionCount++;
     if (depth === 0) {
         return -evaluateBoard(game.board());
     }
 
+    // Check if the current position is in the opening book
+    if (currentFEN in openingBook) {
+        return openingBook[currentFEN];
+    }
 
     var newGameMoves = game.ugly_moves();
 
@@ -134,7 +143,7 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
 };
 
 // Call your minimax function with the current FEN string as an argument
-var bestMove = minimax(3, game, -10000, 10000, true);
+var bestMove = minimax(3, game, -10000, 10000, true, game.fen());
 var transpositionTable = {};
 
 var evaluateBoard = function (board) {
@@ -317,16 +326,66 @@ var getBestMove = function (game) {
 
     positionCount = 0;
     var depth = parseInt($('#search-depth').find(':selected').text());
-
+    console.log(game.fen());
     var d = new Date().getTime();
-    if (currentFEN = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1') {
+    if (game.fen() == 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1') {
         var bestMoveFound = 'e5';
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
         
     }
-    else if (currentFEN = 'rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1') {
-        var bestMoveFound = 'kf6';
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1') {
+        var bestMoveFound = 'Nf6';
         var bestMove = { color: 'b', from: 6, to: 37, flags: 1, piece: 'n' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/1P6/8/P1PPPPPP/RNBQKBNR b KQkq b3 0 1') {
+        var bestMoveFound = 'e6';
+        var bestMove = { color: 'b', from: 20, to: 36, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq c3 0 1') {
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 36, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1') {
+        var bestMoveFound = 'Nf6';
+        var bestMove = { color: 'b', from: 6, to: 37, flags: 1, piece: 'n' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/5P2/8/PPPPP1PP/RNBQKBNR b KQkq f3 0 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/6P1/8/PPPPPP1P/RNBQKBNR b KQkq g3 0 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq h3 0 1') {
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1') {
+        var bestMoveFound = 'e5';
+        var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
+
+    }
+    else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1') {
+        var bestMoveFound = 'd5';
+        var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
 
     }
     else {
