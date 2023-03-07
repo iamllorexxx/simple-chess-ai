@@ -59,7 +59,7 @@ var zeroMove = function (game) {
 
     for (var i = 0; i < newGameMoves.length; i++) {
         game.ugly_move(newGameMoves[i]);
-        var value = minimax(1, game, -10000, 10000, false);
+        var value = minimax(4, game, -10000, 10000, false);
         game.undo();
 
         // If a zero move is found, immediately return it
@@ -107,8 +107,6 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN
     if (depth === 0) {
         return -evaluateBoard(game.board());
     }
-
-    // Check if the current position is in the opening book
     if (currentFEN in openingBook) {
         return openingBook[currentFEN];
     }
@@ -116,34 +114,32 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer, currentFEN
     var newGameMoves = game.ugly_moves();
 
     if (isMaximisingPlayer) {
-        var bestMove = -9999;
+        var bestMove = -Infinity;
         for (var i = 0; i < newGameMoves.length; i++) {
             game.ugly_move(newGameMoves[i]);
-            bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer, game.fen()));
+            var score = minimax(depth - 1, game, alpha, beta, false, game.fen());
             game.undo();
-            alpha = Math.max(alpha, bestMove);
-            if (beta <= alpha) {
-                break;
-            }
+            bestMove = Math.max(bestMove, score);
+            alpha = Math.max(alpha, score);
+            if (beta <= alpha) break;
         }
         return bestMove;
     } else {
-        var bestMove = 9999;
+        var bestMove = Infinity;
         for (var i = 0; i < newGameMoves.length; i++) {
             game.ugly_move(newGameMoves[i]);
-            bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer, game.fen()));
+            var score = minimax(depth - 1, game, alpha, beta, true, game.fen());
             game.undo();
-            beta = Math.min(beta, bestMove);
-            if (beta <= alpha) {
-                break;
-            }
+            bestMove = Math.min(bestMove, score);
+            beta = Math.min(beta, score);
+            if (beta <= alpha) break;
         }
         return bestMove;
     }
 };
 
 // Call your minimax function with the current FEN string as an argument
-var bestMove = minimax(3, game, -10000, 10000, true, game.fen());
+var bestMove = minimax(4, game, -10000, 10000, true, game.fen());
 var transpositionTable = {};
 
 var evaluateBoard = function (board) {
@@ -161,6 +157,8 @@ var evaluateBoard = function (board) {
         }
     }
     transpositionTable[boardString] = totalEvaluation;
+    
+
     return totalEvaluation;
 };
 
@@ -292,7 +290,6 @@ var getPieceValue = function (piece, x, y) {
         }
         throw "Unknown piece type: " + piece.type;
     };
-
     var absoluteValue = getAbsoluteValue(piece, piece.color === 'w', x, y);
     return piece.color === 'w' ? absoluteValue : -absoluteValue;
 };
@@ -326,13 +323,13 @@ var getBestMove = function (game) {
 
     positionCount = 0;
     var depth = parseInt($('#search-depth').find(':selected').text());
-    console.log(game.fen());
+    
     var d = new Date().getTime();
     /* ходы пешками на 2 клетки */
     if (game.fen() == 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1') {
         var bestMoveFound = 'e5';
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
-        
+
     }
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1') {
         var bestMoveFound = 'Nf6';
@@ -369,7 +366,7 @@ var getBestMove = function (game) {
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
 
     }
-        /* ходы конями */
+    /* ходы конями */
 
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1') {
         var bestMoveFound = 'e5';
@@ -391,7 +388,7 @@ var getBestMove = function (game) {
         var bestMove = { color: 'b', from: 19, to: 51, flags: 1, piece: 'p' }
 
     }
-        /* ходы пешками на 1 клетку */
+    /* ходы пешками на 1 клетку */
     else if (game.fen() == 'rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1') {
         var bestMoveFound = 'b6';
         var bestMove = { color: 'b', from: 17, to: 33, flags: 1, piece: 'p' }
@@ -432,11 +429,11 @@ var getBestMove = function (game) {
         var bestMove = { color: 'b', from: 20, to: 52, flags: 1, piece: 'p' }
 
     }
-    
+
     else {
         var bestMoveFound = 'e5';
 
-        var bestMove = minimaxRoot(depth, game, true);
+        var bestMove = minimaxRoot(6, game, true);
     }
     var d2 = new Date().getTime();
     var moveTime = (d2 - d);
